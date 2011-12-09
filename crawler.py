@@ -22,6 +22,7 @@ import Queue
 import sys
 import hashlib
 import argparse
+import time
 
 queue = Queue.Queue()
 parser = argparse.ArgumentParser(description='*Booru image crawler!')
@@ -72,6 +73,8 @@ def hash_sum(path_to_file):
 for current_page in range(1, args.pages):
     request_data = urllib.urlencode({'tags':args.tags, 'limit':args.limit, 'page':current_page})
     print 'Currently parsing page: {}'.format(current_page)
+    if args.booru == 'konachan':
+        time.sleep(2)
     req = urllib2.Request(url, request_data)
     response = urllib2.urlopen(req)
     response_data = response.read()
