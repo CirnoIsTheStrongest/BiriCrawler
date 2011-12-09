@@ -26,8 +26,6 @@ import argparse
 
 url = 'http://oreno.imouto.org/post/index.json'
 queue = Queue.Queue()
-input_parameters = {}
-
 parser = argparse.ArgumentParser(description='*Booru image crawler!')
 parser.add_argument('tags', type=str,
                     help='tags to download (required)')
@@ -41,12 +39,10 @@ args = parser.parse_args()
 folder_path = raw_input('Save File To:')
 if len(folder_path) == 0:
     folder_path = os.path.join(os.environ['USERPROFILE'], 'Downloads' , args.tags)
-input_parameters['tags'] = args.tags
-input_parameters['limit'] = args.limit
-
+    
 ## encodes data in url readable format, builds manual request
 ## opens page, reads response and decodes JSON
-request_data = urllib.urlencode(input_parameters)
+request_data = urllib.urlencode({'tags':args.tags, 'limit':limit})
 req = urllib2.Request(url, request_data)
 response = urllib2.urlopen(req)
 response_data = response.read()
