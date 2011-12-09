@@ -24,13 +24,14 @@ import sys
 import hashlib
 import argparse
 
-url = 'http://oreno.imouto.org/post/index.json'
 queue = Queue.Queue()
 parser = argparse.ArgumentParser(description='*Booru image crawler!')
 parser.add_argument('tags', type=str,
                     help='tags to download (required)')
 parser.add_argument('-l', '--limit', type=int,
                     help='maximum number of images per page')
+parser.add_argument('-b', '--booru', type=str,
+                    help='Choose your booru. Choices are Konachan, Oreno, Danbooru')
 ## to be used after I add pagination
 ## parser.add_argument('-p', '--page', type=int,
 ##                  help='maximum number of pages to parse')
@@ -39,10 +40,19 @@ args = parser.parse_args()
 folder_path = raw_input('Save File To:')
 if len(folder_path) == 0:
     folder_path = os.path.join(os.environ['USERPROFILE'], 'Downloads' , args.tags)
+
+if args.booru == 'Konachan':
+    url = 'http://konachan.com/post/index.json'
+elif args.booru == 'Oreno':
+    url = 'http://oreno.imouto.org/post/index.json'
+elif args.booru == 'Danbooru':
+    url = 'http://danbooru.donmai.us/post/index.json'
     
+print url
+
 ## encodes data in url readable format, builds manual request
 ## opens page, reads response and decodes JSON
-request_data = urllib.urlencode({'tags':args.tags, 'limit':limit})
+request_data = urllib.urlencode({'tags':args.tags, 'limit':args.limit})
 req = urllib2.Request(url, request_data)
 response = urllib2.urlopen(req)
 response_data = response.read()
