@@ -32,9 +32,8 @@ parser.add_argument('-l', '--limit', type=int,
                     help='maximum number of images per page')
 parser.add_argument('-b', '--booru', type=str, default='danbooru', 
                     help='Choose your booru. Choices are konachan, oreno,danbooru, sankaku')
-## to be used after I add pagination
-## parser.add_argument('-p', '--page', type=int,
-##                  help='maximum number of pages to parse')
+parser.add_argument('-p', '--pages', type=int,
+                  help='maximum number of pages to download')
 
 boorus = {
           'konachan':'http://konachan.com/post/index.json', 
@@ -51,21 +50,9 @@ try:
     url = boorus[args.booru.lower()]
 except KeyError:
     print 'No Such Booru!'
-print url
-
+    
 ## encodes data in url readable format, builds manual request
 ## opens page, reads response and decodes JSON
-request_data = urllib.urlencode({'tags':args.tags, 'limit':args.limit})
-req = urllib2.Request(url, request_data)
-response = urllib2.urlopen(req)
-response_data = response.read()
-query_results = Decoder().decode(response_data)
-folder_path = os.path.normpath(folder_path)
-folder_path = os.path.abspath(folder_path)
-
-## checks if path exists, if not, creates it
-if os.path.exists(folder_path) == False:
-    os.makedirs(folder_path)
 def hash_sum(path_to_file):
     file_path = path_to_file
     file_hash_temp = hashlib.md5()
@@ -73,19 +60,34 @@ def hash_sum(path_to_file):
         for chunk in iter(lambda: file_to_be_checked.read(8192), ''):
             file_hash_temp.update(chunk)
         return file_hash_temp.hexdigest()
+        
+for current_page in range(1, args.pages):
+    request_data = urllib.urlencode({'tags':args.tags, 'limit':args.limit, 'page':current_page})
+    print 'Currently parsing page: {}'.format(current_page)
+    req = urllib2.Request(url, request_data)
+    response = urllib2.urlopen(req)
+    response_data = response.read()
+    query_results = Decoder().decode(response_data)
+    folder_path = os.path.normpath(folder_path)
+    folder_path = os.path.abspath(folder_path)
+    for result in query_results:
+        md5 = result['md5']
+        file_url = result['file_url']
+        file_tags = result['tags']
+        folder = str(folder_path)
+        file_extension = str(file_url)[-4:]
+        file_name = md5 + file_extension
+        file_path = os.path.join(folder_path, file_name)
+        if os.path.exists(file_path) and md5 == hash_sum(file_path):
+            continue
+        else:
+            queue.put((file_url, file_path, md5))
+## checks if path exists, if not, creates it
+if os.path.exists(folder_path) == False:
+    os.makedirs(folder_path)
 
-for result in query_results:
-    md5 = result['md5']
-    file_url = result['file_url']
-    file_tags = result['tags']
-    folder = str(folder_path)
-    file_extension = str(file_url)[-4:]
-    file_name = md5 + file_extension
-    file_path = os.path.join(folder_path, file_name)
-    if os.path.exists(file_path) and md5 == hash_sum(file_path):
-        continue
-    else:
-        queue.put((file_url, file_path, md5))
+
+
 print 'Total images for queue: ', queue.qsize()
 
 ## function for retrieving data from server
