@@ -22,27 +22,28 @@ from threading import Thread
 import Queue
 import sys
 import hashlib
+import argparse
 
 url = 'http://oreno.imouto.org/post/index.json'
 queue = Queue.Queue()
 input_parameters = {}
-############ text input ####################################
-##    parameters = raw_input('Search Parameters:')
+
+parser = argparse.ArgumentParser(description='*Booru image crawler!')
+parser.add_argument('tags', type=str,
+                    help='tags to download (required)')
+parser.add_argument('-l', '--limit', type=int,
+                    help='maximum number of images per page')
+## to be used after I add pagination
+## parser.add_argument('-p', '--page', type=int,
+##                  help='maximum number of pages to parse')
+
+args = parser.parse_args()
 folder_path = raw_input('Save File To:')
 if len(folder_path) == 0:
-    folder_path = os.environ['USERPROFILE'] + '\\Downloads\\cirno\\'
-parameters = 'tags = cirno ; limit = 10'
-# folder_path = str('C:\Users\Cirno\Downloads\Danbooru Images')
-## splits the parameters, strips whitespace, assigns dict
-splits = parameters.split(";")
-for split in splits:
-    subsplits = split.split('=')
-    key = subsplits[0].strip()
-    value = subsplits[1].strip()
-    input_parameters[key]= value
-input_parameters['limit'] = int(input_parameters['limit'])
+    folder_path = os.path.join(os.environ['USERPROFILE'], 'Downloads' , args.tags)
+input_parameters['tags'] = args.tags
+input_parameters['limit'] = args.limit
 
-print input_parameters
 ## encodes data in url readable format, builds manual request
 ## opens page, reads response and decodes JSON
 request_data = urllib.urlencode(input_parameters)
@@ -50,15 +51,12 @@ req = urllib2.Request(url, request_data)
 response = urllib2.urlopen(req)
 response_data = response.read()
 query_results = Decoder().decode(response_data)
-
-## Normalizes folder path structure and converts it to absolute path if it is not
 folder_path = os.path.normpath(folder_path)
 folder_path = os.path.abspath(folder_path)
+
 ## checks if path exists, if not, creates it
 if os.path.exists(folder_path) == False:
     os.makedirs(folder_path)
-## takes results and sets a variable to values I want to use later
-
 def hash_sum(path_to_file):
     file_path = path_to_file
     file_hash_temp = hashlib.md5()
@@ -90,7 +88,6 @@ def fetch_url((file_url, file_path, md5)):
     finally: 
         r.close()
         
-## class for passing queue to thread
 class url_download(threading.Thread):
     def __init__(self, queue):
         self.queue = queue
@@ -107,8 +104,7 @@ class url_download(threading.Thread):
             except:
                 traceback.print_exc(file=sys.stderr)
                 sys.stderr.flush()
-
-
+                
 num_conn = 4
 threads = []
 for download in range(num_conn):
