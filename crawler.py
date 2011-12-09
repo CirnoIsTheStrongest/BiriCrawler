@@ -49,7 +49,7 @@ parser.add_argument('-b', '--booru', type=str, default='danbooru',
 boorus = {
           'konachan':'http://konachan.com/post/index.json', 
           'oreno':'http://oreno.imouto.org/post/index.json', 
-          'danbooru':'http://danbooru.donmai.us/post/index.json'
+          'danbooru':'http://danbooru.donmai.us/post/index.json',
           'sankaku':'http://chan.sankakucomplex.com/post.index.json'
           }
 args = parser.parse_args()
