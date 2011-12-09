@@ -50,7 +50,7 @@ boorus = {
           'konachan':'http://konachan.com/post/index.json', 
           'oreno':'http://oreno.imouto.org/post/index.json', 
           'danbooru':'http://danbooru.donmai.us/post/index.json',
-          'sankaku':'http://chan.sankakucomplex.com/post.index.json'
+          'sankaku':'http://chan.sankakucomplex.com/post/index.json'
           }
 args = parser.parse_args()
 folder_path = raw_input('Save File To:')
