@@ -10,7 +10,6 @@
 ## 1. gelbooru API support
 ## 2. Hash Caching to DB
 ## 3. Custom Filename Nomenclature
-## 4. Pagination
 import shutil
 import traceback
 import urllib
@@ -26,6 +25,7 @@ import argparse
 
 queue = Queue.Queue()
 parser = argparse.ArgumentParser(description='*Booru image crawler!')
+
 parser.add_argument('tags', type=str,
                     help='tags to download (required)')
 parser.add_argument('-l', '--limit', type=int,
@@ -34,6 +34,8 @@ parser.add_argument('-b', '--booru', type=str, default='danbooru',
                     help='Choose your booru. Choices are konachan, oreno,danbooru, sankaku')
 parser.add_argument('-p', '--pages', type=int,
                   help='maximum number of pages to download')
+parser.add_argument('-c', '--conn', type=int, default=4,
+                  help='max number of threads to use, maximum of 8')
 
 boorus = {
           'konachan':'http://konachan.com/post/index.json', 
@@ -43,6 +45,12 @@ boorus = {
           'neko':'http://nekobooru.net/post/index.json'
           }
 args = parser.parse_args()
+if args.conn < 8:
+    max_threads = args.conn
+else:
+    print 'Maximum of 8 threads! Defaulting to 4!'
+    max_threads = 4
+
 folder_path = raw_input('Save File To:')
 if len(folder_path) == 0:
     folder_path = os.path.join(os.environ['USERPROFILE'], 'Downloads' , args.tags)
@@ -82,14 +90,12 @@ for current_page in range(1, args.pages):
             continue
         else:
             queue.put((file_url, file_path, md5))
-## checks if path exists, if not, creates it
-if os.path.exists(folder_path) == False:
-    os.makedirs(folder_path)
-
-
 
 print 'Total images for queue: ', queue.qsize()
 
+if os.path.exists(folder_path) == False:
+    os.makedirs(folder_path)
+    
 ## function for retrieving data from server
 def fetch_url((file_url, file_path, md5)):
     r = urllib2.urlopen(urllib2.Request(file_url))
@@ -116,7 +122,7 @@ class url_download(threading.Thread):
                 traceback.print_exc(file=sys.stderr)
                 sys.stderr.flush()
                 
-num_conn = 4
+num_conn = int(max_threads)
 threads = []
 for download in range(num_conn):
     t = url_download(queue)
