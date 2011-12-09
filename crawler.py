@@ -23,7 +23,7 @@ import sys
 import hashlib
 import argparse
 import time
-import cpickle
+import cPickle as pickle
 
 queue = Queue.Queue()
 parser = argparse.ArgumentParser(description='*Booru image crawler!')
@@ -101,19 +101,18 @@ for current_page in range(1, args.pages):
     folder_path = os.path.abspath(folder_path)
     for result in query_results:
         md5 = result['md5']
+        if md5 in md5_dict:
+            continue
+        file_url = result['file_url']
         file_extension = str(file_url)[-4:]
         file_name = md5 + file_extension
-        try:
-            md5sum = md5_dict[key]
-            if md5 == md5sum:
-                continue
-        except KeyError:            
-            file_url = result['file_url']
-            file_tags = result['tags']
-            folder = str(folder_path)
-            file_path = os.path.join(folder_path, file_name)
-            md5_dict[md5] file_name
+        file_tags = result['tags']
+        folder = str(folder_path)
+        file_path = os.path.join(folder_path, file_name)
+        md5_dict[md5] = file_name
         
+md5_pickler(md5_dict)        
+
  #       if os.path.exists(file_path) and md5 == hash_sum(file_path):
  #           continue
  #       else:
