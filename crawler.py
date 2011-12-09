@@ -24,6 +24,16 @@ import sys
 import hashlib
 import argparse
 
+class TheShitHasHitTheFan(Exception):
+    def __init__(self):
+        Exception.__init__(self)
+        
+    def __repr__(self):
+        return 'The shit has hit the fan!'
+        
+    def __unicode__(self):
+        return 'The shit has hit the fan!'
+
 queue = Queue.Queue()
 parser = argparse.ArgumentParser(description='*Booru image crawler!')
 parser.add_argument('tags', type=str,
@@ -31,22 +41,25 @@ parser.add_argument('tags', type=str,
 parser.add_argument('-l', '--limit', type=int,
                     help='maximum number of images per page')
 parser.add_argument('-b', '--booru', type=str,
-                    help='Choose your booru. Choices are Konachan, Oreno, Danbooru')
+                    help='Choose your booru. Choices are konachan, oreno,danbooru')
 ## to be used after I add pagination
 ## parser.add_argument('-p', '--page', type=int,
 ##                  help='maximum number of pages to parse')
 
+boorus = {
+          'konachan':'http://konachan.com/post/index.json', 
+          'oreno':'http://oreno.imouto.org/post/index.json', 
+          'danbooru':'http://danbooru.donmai.us/post/index.json'
+          }
 args = parser.parse_args()
 folder_path = raw_input('Save File To:')
 if len(folder_path) == 0:
     folder_path = os.path.join(os.environ['USERPROFILE'], 'Downloads' , args.tags)
-
-if args.booru == 'Konachan':
-    url = 'http://konachan.com/post/index.json'
-elif args.booru == 'Oreno':
-    url = 'http://oreno.imouto.org/post/index.json'
-elif args.booru == 'Danbooru':
-    url = 'http://danbooru.donmai.us/post/index.json'
+try:
+    url = boorus[args.booru.lower()]
+except KeyError:
+    print 'No Such Booru!'
+    raise TheShitHasHitTheFan
     
 print url
 
