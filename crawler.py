@@ -7,7 +7,7 @@
 ## Save File To is the location you want to save to
 ## Location must be an existing absolute path ending in \
 ## Feature Wishlist:
-## 1. argument parsing
+## 1. gelbooru API support
 ## 2. Hash Caching to DB
 ## 3. Custom Filename Nomenclature
 ## 4. choose between boorus (danbooru, konachan, oreno)
@@ -40,8 +40,8 @@ parser.add_argument('tags', type=str,
                     help='tags to download (required)')
 parser.add_argument('-l', '--limit', type=int,
                     help='maximum number of images per page')
-parser.add_argument('-b', '--booru', type=str,
-                    help='Choose your booru. Choices are konachan, oreno,danbooru')
+parser.add_argument('-b', '--booru', type=str, default='danbooru', 
+                    help='Choose your booru. Choices are konachan, oreno,danbooru, sankaku')
 ## to be used after I add pagination
 ## parser.add_argument('-p', '--page', type=int,
 ##                  help='maximum number of pages to parse')
@@ -50,6 +50,7 @@ boorus = {
           'konachan':'http://konachan.com/post/index.json', 
           'oreno':'http://oreno.imouto.org/post/index.json', 
           'danbooru':'http://danbooru.donmai.us/post/index.json'
+          'sankaku':'http://chan.sankakucomplex.com/post.index.json'
           }
 args = parser.parse_args()
 folder_path = raw_input('Save File To:')
