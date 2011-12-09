@@ -23,6 +23,7 @@ import sys
 import hashlib
 import argparse
 import time
+import cpickle
 
 queue = Queue.Queue()
 parser = argparse.ArgumentParser(description='*Booru image crawler!')
@@ -51,7 +52,24 @@ if args.conn < 8:
 else:
     print 'Maximum of 8 threads! Defaulting to 4!'
     max_threads = 4
+    
+md5_path = os.path.join(os.path.dirname(__file__), 'md5.pickle')
+            
+def md5_pickler(md5_info):
+    with open('md5.pickle', 'wb') as f:
+        pickle.dump(md5_info, f)
+        
+def md5_unpickler(md5sum_file):
+    with open(md5sum_file, 'rb') as f:
+       return pickle.load(md5sum_file)
 
+try:
+    md5_dict = md5_unpickler(md5_path)
+except IOError:
+    md5_dict = {}
+    
+    
+    
 folder_path = raw_input('Save File To:')
 if len(folder_path) == 0:
     folder_path = os.path.join(os.environ['USERPROFILE'], 'Downloads' , args.tags)
@@ -83,17 +101,24 @@ for current_page in range(1, args.pages):
     folder_path = os.path.abspath(folder_path)
     for result in query_results:
         md5 = result['md5']
-        file_url = result['file_url']
-        file_tags = result['tags']
-        folder = str(folder_path)
         file_extension = str(file_url)[-4:]
         file_name = md5 + file_extension
-        file_path = os.path.join(folder_path, file_name)
-        if os.path.exists(file_path) and md5 == hash_sum(file_path):
-            continue
-        else:
-            queue.put((file_url, file_path, md5))
-
+        try:
+            md5sum = md5_dict[key]
+            if md5 == md5sum:
+                continue
+        except KeyError:            
+            file_url = result['file_url']
+            file_tags = result['tags']
+            folder = str(folder_path)
+            file_path = os.path.join(folder_path, file_name)
+            md5_dict[md5] file_name
+        
+ #       if os.path.exists(file_path) and md5 == hash_sum(file_path):
+ #           continue
+ #       else:
+ #           queue.put((file_url, file_path, md5))
+       
 print 'Total images for queue: ', queue.qsize()
 
 if os.path.exists(folder_path) == False:
