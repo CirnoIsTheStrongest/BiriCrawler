@@ -10,7 +10,7 @@
 ## 1. gelbooru API support
 ## 2. Hash Caching to DB
 ## 3. Custom Filename Nomenclature
-## 4. choose between boorus (danbooru, konachan, oreno)
+## 4. Pagination
 import shutil
 import traceback
 import urllib
@@ -23,16 +23,6 @@ import Queue
 import sys
 import hashlib
 import argparse
-
-class TheShitHasHitTheFan(Exception):
-    def __init__(self):
-        Exception.__init__(self)
-        
-    def __repr__(self):
-        return 'The shit has hit the fan!'
-        
-    def __unicode__(self):
-        return 'The shit has hit the fan!'
 
 queue = Queue.Queue()
 parser = argparse.ArgumentParser(description='*Booru image crawler!')
@@ -50,7 +40,8 @@ boorus = {
           'konachan':'http://konachan.com/post/index.json', 
           'oreno':'http://oreno.imouto.org/post/index.json', 
           'danbooru':'http://danbooru.donmai.us/post/index.json',
-          'sankaku':'http://chan.sankakucomplex.com/post/index.json'
+          'sankaku':'http://chan.sankakucomplex.com/post/index.json',
+          'neko':'http://nekobooru.net/post/index.json'
           }
 args = parser.parse_args()
 folder_path = raw_input('Save File To:')
@@ -60,8 +51,6 @@ try:
     url = boorus[args.booru.lower()]
 except KeyError:
     print 'No Such Booru!'
-    raise TheShitHasHitTheFan
-    
 print url
 
 ## encodes data in url readable format, builds manual request
