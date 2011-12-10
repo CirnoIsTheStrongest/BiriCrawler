@@ -1,15 +1,7 @@
 #!/usr/bin/python -tt
 
-## Simple *booru crawler
-## Usage: path\to\script
-## Search parameters are in the form Parameter name = Parameter value
-## Separate search parameters with ;
-## Save File To is the location you want to save to
-## Location must be an existing absolute path ending in \
-## Feature Wishlist:
 ## 1. gelbooru API support
-## 2. Hash Caching to DB
-## 3. Custom Filename Nomenclature
+## 2. Custom Filename Nomenclature
 import shutil
 import traceback
 import urllib
