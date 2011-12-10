@@ -35,7 +35,7 @@ parser.add_argument('-l', '--limit', type=int,
 parser.add_argument('-b', '--booru', type=str, default='danbooru', 
                     help='Choose your booru. Choices are konachan, oreno,danbooru, sankaku')
 parser.add_argument('-p', '--pages', type=int,
-                  help='maximum number of pages to download')
+                  help='maximum number of pages to download', default=2)
 parser.add_argument('-c', '--conn', type=int, default=4,
                   help='max number of threads to use, maximum of 8')
 
@@ -117,7 +117,6 @@ for current_page in range(1, args.pages):
         file_tags = result['tags']
         folder = str(folder_path)
         file_path = os.path.join(folder_path, file_name)
-        md5_dict[md5] = file_name
         queue.put((file_url, file_path, md5))
         
 print 'Total images for queue: ', queue.qsize()
