@@ -23,6 +23,7 @@ import sys
 import hashlib
 import argparse
 import time
+import cPickle as pickle
 
 queue = Queue.Queue()
 parser = argparse.ArgumentParser(description='*Booru image crawler!')
@@ -51,7 +52,40 @@ if args.conn < 8:
 else:
     print 'Maximum of 8 threads! Defaulting to 4!'
     max_threads = 4
+    
+md5_path = os.path.join(os.path.dirname(__file__), 'md5.pickle')
 
+def hash_sum(path_to_file):
+    file_path = path_to_file
+    file_hash_temp = hashlib.md5()
+    with open(file_path, 'rb') as file_to_be_checked:
+        for chunk in iter(lambda: file_to_be_checked.read(8192), ''):
+            file_hash_temp.update(chunk)
+        return file_hash_temp.hexdigest()
+        
+def fetch_url((file_url, file_path, md5)):
+    r = urllib2.urlopen(urllib2.Request(file_url))
+    try:
+        with open(file_path, 'wb') as f:
+            shutil.copyfileobj(r,f, length=8192)
+    finally: 
+        r.close()
+        
+def md5_pickler(md5_info):
+    with open('md5.pickle', 'wb') as f:
+        pickle.dump(md5_info, f)
+        
+def md5_unpickler(md5sum_file):
+    with open(md5sum_file, 'rb') as f:
+       return pickle.load(f)
+
+try:
+    md5_dict = md5_unpickler(md5_path)
+except IOError:
+    md5_dict = {}
+    
+    
+    
 folder_path = raw_input('Save File To:')
 if len(folder_path) == 0:
     folder_path = os.path.join(os.environ['USERPROFILE'], 'Downloads' , args.tags)
@@ -62,14 +96,6 @@ except KeyError:
     
 ## encodes data in url readable format, builds manual request
 ## opens page, reads response and decodes JSON
-def hash_sum(path_to_file):
-    file_path = path_to_file
-    file_hash_temp = hashlib.md5()
-    with open(file_path, 'rb') as file_to_be_checked:
-        for chunk in iter(lambda: file_to_be_checked.read(8192), ''):
-            file_hash_temp.update(chunk)
-        return file_hash_temp.hexdigest()
-        
 for current_page in range(1, args.pages):
     request_data = urllib.urlencode({'tags':args.tags, 'limit':args.limit, 'page':current_page})
     print 'Currently parsing page: {}'.format(current_page)
@@ -83,31 +109,21 @@ for current_page in range(1, args.pages):
     folder_path = os.path.abspath(folder_path)
     for result in query_results:
         md5 = result['md5']
+        if md5 in md5_dict:
+            continue
         file_url = result['file_url']
-        file_tags = result['tags']
-        folder = str(folder_path)
         file_extension = str(file_url)[-4:]
         file_name = md5 + file_extension
+        file_tags = result['tags']
+        folder = str(folder_path)
         file_path = os.path.join(folder_path, file_name)
-        if os.path.exists(file_path) and md5 == hash_sum(file_path):
-            continue
-        else:
-            queue.put((file_url, file_path, md5))
-
+        md5_dict[md5] = file_name
+        queue.put((file_url, file_path, md5))
+        
 print 'Total images for queue: ', queue.qsize()
-
 if os.path.exists(folder_path) == False:
     os.makedirs(folder_path)
     
-## function for retrieving data from server
-def fetch_url((file_url, file_path, md5)):
-    r = urllib2.urlopen(urllib2.Request(file_url))
-    try:
-        with open(file_path, 'wb') as f:
-            shutil.copyfileobj(r,f, length=8192)
-    finally: 
-        r.close()
-        
 class url_download(threading.Thread):
     def __init__(self, queue):
         self.queue = queue
@@ -115,7 +131,18 @@ class url_download(threading.Thread):
     def run(self):
         while 1:
             try:
-                fetch_url(self.queue.get_nowait())
+                count = 0
+                file_url, file_path, md5 = self.queue.get_nowait()
+                fetch_url((file_url, file_path, md5))
+                file_extension = str(file_url)[-4:]
+                file_name = md5 + file_extension
+                if md5 == hash_sum(file_path):
+                   md5_dict[md5] = file_name
+                else:
+                    count +=1
+                if count > 3:
+                    print 'File failed to download, might be corrupt.'
+                    break                
                 qsize = self.queue.qsize()
                 if qsize > 0:
                     print 'Count Remaining: ', qsize
@@ -134,5 +161,6 @@ for download in range(num_conn):
     
 for thread in threads:
     thread.join()
-
+    
+md5_pickler(md5_dict)
 print 'All files downloaded!'
