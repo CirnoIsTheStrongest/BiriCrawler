@@ -131,7 +131,18 @@ class url_download(threading.Thread):
     def run(self):
         while 1:
             try:
-                fetch_url(self.queue.get_nowait())
+                count = 0
+                file_url, file_path, md5 = self.queue.get_nowait()
+                fetch_url((file_url, file_path, md5))
+                file_extension = str(file_url)[-4:]
+                file_name = md5 + file_extension
+                if md5 == hash_sum(file_path):
+                   md5_dict[md5] = file_name
+                else:
+                    count +=1
+                if count > 3:
+                    print 'File failed to download, might be corrupt.'
+                    break                
                 qsize = self.queue.qsize()
                 if qsize > 0:
                     print 'Count Remaining: ', qsize
