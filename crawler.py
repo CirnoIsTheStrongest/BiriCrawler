@@ -77,7 +77,7 @@ def md5_pickler(md5_info):
         
 def md5_unpickler(md5sum_file):
     with open(md5sum_file, 'rb') as f:
-       return pickle.load(md5sum_file)
+       return pickle.load(f)
 
 try:
     md5_dict = md5_unpickler(md5_path)
@@ -120,7 +120,6 @@ for current_page in range(1, args.pages):
         md5_dict[md5] = file_name
         queue.put((file_url, file_path, md5))
         
-md5_pickler(md5_dict)        
 print 'Total images for queue: ', queue.qsize()
 if os.path.exists(folder_path) == False:
     os.makedirs(folder_path)
@@ -151,5 +150,6 @@ for download in range(num_conn):
     
 for thread in threads:
     thread.join()
-
+    
+md5_pickler(md5_dict)
 print 'All files downloaded!'
