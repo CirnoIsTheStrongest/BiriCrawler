@@ -2,7 +2,6 @@
 
 ## 1. gelbooru API support
 ## 2. Custom Filename Nomenclature
-## 3. Time elapse for download, total data transferred.
 import shutil
 import traceback
 import urllib
@@ -30,7 +29,7 @@ parser.add_argument('-l', '--limit', type=int,
 parser.add_argument('-b', '--booru', type=str, default='danbooru', 
                     help='Choose your booru. Choices are konachan, oreno,danbooru, sankaku')
 parser.add_argument('-p', '--pages', type=int,
-                  help='maximum number of pages to download', default=2)
+                  help='maximum number of pages to download', default=1)
 parser.add_argument('-c', '--conn', type=int, default=4,
                   help='max number of threads to use, maximum of 8')
 
@@ -58,7 +57,7 @@ def hash_sum(path_to_file):
             file_hash_temp.update(chunk)
         return file_hash_temp.hexdigest()
         
-def fetch_url((file_url, file_path, md5)):
+def fetch_url(file_url, file_path, md5):
     r = urllib2.urlopen(urllib2.Request(file_url))
     try:
         with open(file_path, 'wb') as f:
@@ -70,16 +69,16 @@ def convert_bytes(bytes):
     bytes = float(bytes)
     if bytes >= 1099511627776:
         terabytes = bytes / 1099511627776
-        size = '%.2fT' % terabytes
+        size = '%.2fTB' % terabytes
     elif bytes >= 1073741824:
         gigabytes = bytes / 1073741824
-        size = '%.2fG' % gigabytes
+        size = '%.2fGB' % gigabytes
     elif bytes >= 1048576:
         megabytes = bytes / 1048576
-        size = '%.2fM' % megabytes
+        size = '%.2fMB' % megabytes
     elif bytes >= 1024:
         kilobytes = bytes / 1024
-        size = '%.2fK' % kilobytes
+        size = '%.2fKB' % kilobytes
     else:
         size = '%.2fb' % bytes
     return size        
@@ -106,11 +105,12 @@ try:
     url = boorus[args.booru.lower()]
 except KeyError:
     print 'No Such Booru!'
+    raise SystemExit
     
 ## encodes data in url readable format, builds manual request
 ## opens page, reads response and decodes JSON
 total_download = 0
-for current_page in range(1, args.pages):
+for current_page in range(1, args.pages + 1):
     request_data = urllib.urlencode({'tags':args.tags, 'limit':args.limit, 'page':current_page})
     print 'Currently parsing page: {}'.format(current_page)
     if args.booru == 'konachan':
@@ -147,7 +147,7 @@ class url_download(threading.Thread):
             try:
                 count = 0
                 file_url, file_path, md5, file_size = self.queue.get_nowait()
-                fetch_url((file_url, file_path, md5))
+                fetch_url(file_url, file_path, md5)
                 file_extension = str(file_url)[-4:]
                 file_name = md5 + file_extension
                 if md5 == hash_sum(file_path):
@@ -156,7 +156,7 @@ class url_download(threading.Thread):
                     count +=1
                 if count > 3:
                     print 'File failed to download, might be corrupt.'
-                    break                
+                    continue           
                 qsize = self.queue.qsize()
                 if qsize > 0:
                     print 'Count Remaining: ', qsize
