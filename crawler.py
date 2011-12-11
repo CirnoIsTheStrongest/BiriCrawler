@@ -18,6 +18,8 @@ import argparse
 import time
 import cPickle as pickle
 
+start_time = time.time()
+
 queue = Queue.Queue()
 parser = argparse.ArgumentParser(description='*Booru image crawler!')
 
@@ -63,6 +65,24 @@ def fetch_url((file_url, file_path, md5)):
             shutil.copyfileobj(r,f, length=8192)
     finally: 
         r.close()
+
+def convert_bytes(bytes):
+    bytes = float(bytes)
+    if bytes >= 1099511627776:
+        terabytes = bytes / 1099511627776
+        size = '%.2fT' % terabytes
+    elif bytes >= 1073741824:
+        gigabytes = bytes / 1073741824
+        size = '%.2fG' % gigabytes
+    elif bytes >= 1048576:
+        megabytes = bytes / 1048576
+        size = '%.2fM' % megabytes
+    elif bytes >= 1024:
+        kilobytes = bytes / 1024
+        size = '%.2fK' % kilobytes
+    else:
+        size = '%.2fb' % bytes
+    return size        
         
 def md5_pickler(md5_info):
     with open('md5.pickle', 'wb') as f:
@@ -77,7 +97,7 @@ try:
 except IOError:
     md5_dict = {}
     
-    
+data_downloaded = 0   
     
 folder_path = raw_input('Save File To:')
 if len(folder_path) == 0:
@@ -89,6 +109,7 @@ except KeyError:
     
 ## encodes data in url readable format, builds manual request
 ## opens page, reads response and decodes JSON
+total_download = 0
 for current_page in range(1, args.pages):
     request_data = urllib.urlencode({'tags':args.tags, 'limit':args.limit, 'page':current_page})
     print 'Currently parsing page: {}'.format(current_page)
@@ -110,12 +131,13 @@ for current_page in range(1, args.pages):
         file_tags = result['tags']
         folder = str(folder_path)
         file_path = os.path.join(folder_path, file_name)
-        queue.put((file_url, file_path, md5))
-        
+        file_size = result['file_size']
+        queue.put((file_url, file_path, md5, file_size))
+        total_download = total_download + file_size
 print 'Total images for queue: ', queue.qsize()
 if os.path.exists(folder_path) == False:
     os.makedirs(folder_path)
-    
+
 class url_download(threading.Thread):
     def __init__(self, queue):
         self.queue = queue
@@ -124,7 +146,7 @@ class url_download(threading.Thread):
         while 1:
             try:
                 count = 0
-                file_url, file_path, md5 = self.queue.get_nowait()
+                file_url, file_path, md5, file_size = self.queue.get_nowait()
                 fetch_url((file_url, file_path, md5))
                 file_extension = str(file_url)[-4:]
                 file_name = md5 + file_extension
@@ -155,4 +177,6 @@ for thread in threads:
     thread.join()
     
 md5_pickler(md5_dict)
-print 'All files downloaded!'
+time_elapsed = time.time() - start_time
+print 'All files downloaded! Total time elapsed: {0} {1}.'.format(round(time_elapsed, 3), 'seconds')
+print 'Total data downloaded: {}'.format(convert_bytes(total_download))
