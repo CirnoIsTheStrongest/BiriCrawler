@@ -2,6 +2,7 @@
 
 ## 1. gelbooru API support
 ## 2. Custom Filename Nomenclature
+## 3. Time elapse for download, total data transferred.
 import shutil
 import traceback
 import urllib
