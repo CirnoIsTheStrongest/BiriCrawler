@@ -7,6 +7,12 @@ at irc://irc.rizon.net/BiriBiri or email me at James.Is@winnar.org.
 Python 2.7.2 or above is required. The default save path is currently Windows dependent, enter your own
 if you're running on any other platform.
 
+Feature highlight:
+1. Supports any booru using JSON
+2. Multi-threading, downloads multiple files at a time
+3. Caches file hashes so you never download the same file twice
+4. Verifies files after downloading to make sure there were no errors
+
 Basic usage:
 
 Start the crawler with path/to/crawler.py [tag] -l [limit of images per page] -b [imageboard to use*]
