@@ -128,11 +128,11 @@ for current_page in range(1, args.pages + 1):
     folder_path = os.path.normpath(folder_path)
     folder_path = os.path.abspath(folder_path)
     for result in query_results:
-        if arg.rating == 'e' and result['rating'] == 's' or 'q':
+        if args.rating == 'e' and result['rating'] == 's' or 'q':
             continue
-        elif arg.rating == 'q' and result['rating'] == 'e':
+        elif args.rating == 'q' and result['rating'] == 'e':
             continue
-        elif arg.rating == 's' and result['rating'] == 'e' or 'q':
+        elif args.rating == 's' and result['rating'] == 'e' or 'q':
             continue
         md5 = result['md5']
         if md5 in md5_dict:
@@ -188,7 +188,6 @@ for download in range(num_conn):
 for thread in threads:
     thread.join()
     
-lol
 time_elapsed = time.time() - start_time
 print 'All files downloaded! Total time elapsed: {0} {1}.'.format(round(time_elapsed, 3), 'seconds')
 print 'Total data downloaded: {}'.format(convert_bytes(total_download))
