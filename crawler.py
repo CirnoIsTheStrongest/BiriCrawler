@@ -97,7 +97,6 @@ except IOError:
     md5_dict = {}
     
 data_downloaded = 0   
-    
 folder_path = raw_input('Save File To:')
 if len(folder_path) == 0:
     folder_path = os.path.join(os.environ['USERPROFILE'], 'Downloads' , args.tags)

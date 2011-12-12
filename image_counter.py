@@ -44,7 +44,7 @@ except KeyError:
     print 'Unknown Booru!'
 total_images = 0
 total_size = 0
-for current_page in range(1, int(page_limit)):
+for current_page in range(1, int(page_limit) + 1):
     request_data = urllib.urlencode({'tags':requested_tag, 'limit':image_limit, 'page':current_page})
     print 'Currently parsing page: {}'.format(current_page)
     req = urllib2.Request(url, request_data)
