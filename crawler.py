@@ -128,12 +128,12 @@ for current_page in range(1, args.pages + 1):
     folder_path = os.path.normpath(folder_path)
     folder_path = os.path.abspath(folder_path)
     for result in query_results:
-        if args.rating == 'e' and result['rating'] == 's' or 'q':
-            continue
-        elif args.rating == 'q' and result['rating'] == 'e':
-            continue
-        elif args.rating == 's' and result['rating'] == 'e' or 'q':
-            continue
+        #if args.rating == 'e' and result['rating'] == 's' or 'q':
+        #    continue
+        #elif args.rating == 'q' and result['rating'] == 'e':
+        #    continue
+        #elif args.rating == 's' and result['rating'] == 'e' or 'q':
+        #    continue
         md5 = result['md5']
         if md5 in md5_dict:
             continue
