@@ -37,7 +37,7 @@ def main():
                       help='maximum number of pages to download')
     parser.add_argument('-c', '--conn', type=int, default=4,
                       help='max number of threads to use, maximum of 8')
-    parser.add_argument('-r', '--rating', type=str,
+    parser.add_argument('-r', '--rating', typ=int, choices=[1,2,3],
                       help='desired rating for images. optional.')
     
     boorus = {
@@ -91,11 +91,9 @@ def main():
         folder_path = os.path.normpath(folder_path)
         folder_path = os.path.abspath(folder_path)
         for result in query_results:
-            if args.rating == 'e' and result['rating'] in ['s', 'q']
-                continue
-            elif args.rating == 'q' and result['rating'] == 'e':
-                continue
-            elif args.rating == 's' and result['rating'] in ['e', 'q']
+            ratings = = {'s':1, 'q':2, 'e':3}
+            rating = ratings[result['rating']]
+            if rating > args.rating:
                 continue
             md5 = result['md5']
             if md5 in md5_dict:
