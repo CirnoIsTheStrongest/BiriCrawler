@@ -2,8 +2,7 @@
 
 ## 1. gelbooru API support
 ## 2. Custom Filename Nomenclature
-## 3. add check for save images
-## 4. add load queue state from image_counter.py
+## 3. add load queue state from image_counter.py
 import shutil
 import traceback
 import urllib
@@ -102,8 +101,12 @@ except IOError:
     
 data_downloaded = 0   
 folder_path = raw_input('Save File To:')
+
 if len(folder_path) == 0:
-    folder_path = os.path.join(os.environ['USERPROFILE'], 'Downloads' , args.tags)
+    if sys.platform.startswith("linux"):
+        folder_path = os.path.join(os.environ['HOME'], args.tags)
+    elif sys.platform.startswith("win32"):
+        folder_path = os.path.join(os.environ['USERPROFILE'], 'Downloads' , args.tags)
 try:
     url = boorus[args.booru.lower()]
 except KeyError:
@@ -127,9 +130,9 @@ for current_page in range(1, args.pages + 1):
     for result in query_results:
         if arg.rating == 'e' and result['rating'] == 's' or 'q':
             continue
-        if arg.rating == 'q' and result['rating'] == 'e':
+        elif arg.rating == 'q' and result['rating'] == 'e':
             continue
-        if arg.rating == 's' and result['rating' == 'e' or 'q':
+        elif arg.rating == 's' and result['rating'] == 'e' or 'q':
             continue
         md5 = result['md5']
         if md5 in md5_dict:
@@ -185,7 +188,7 @@ for download in range(num_conn):
 for thread in threads:
     thread.join()
     
-md5_pickler(md5_dict)
+lol
 time_elapsed = time.time() - start_time
 print 'All files downloaded! Total time elapsed: {0} {1}.'.format(round(time_elapsed, 3), 'seconds')
 print 'Total data downloaded: {}'.format(convert_bytes(total_download))
