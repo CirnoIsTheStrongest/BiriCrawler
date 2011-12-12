@@ -29,12 +29,12 @@ def main():
     
     parser.add_argument('tags', type=str,
                         help='tags to download (required)')
-    parser.add_argument('-l', '--limit', type=int,
+    parser.add_argument('-l', '--limit', type=int, default=20,
                         help='maximum number of images per page')
     parser.add_argument('-b', '--booru', type=str, default='danbooru', 
                         help='Choose your booru. Choices are konachan, oreno,danbooru, sankaku')
-    parser.add_argument('-p', '--pages', type=int,
-                      help='maximum number of pages to download', default=1)
+    parser.add_argument('-p', '--pages', type=int, default=1
+                      help='maximum number of pages to download')
     parser.add_argument('-c', '--conn', type=int, default=4,
                       help='max number of threads to use, maximum of 8')
     parser.add_argument('-r', '--rating', type=str,
@@ -81,7 +81,7 @@ def main():
     total_download = 0
     for current_page in range(1, args.pages + 1):
         request_data = urllib.urlencode({'tags':args.tags, 'limit':args.limit, 'page':current_page})
-        print 'Currently parsing page: {}'.format(current_page)
+        print 'Currently parsing        page: {}'.format(current_page)
         if args.booru == 'konachan':
             time.sleep(2)
         req = urllib2.Request(url, request_data)
@@ -91,12 +91,12 @@ def main():
         folder_path = os.path.normpath(folder_path)
         folder_path = os.path.abspath(folder_path)
         for result in query_results:
-            #if args.rating == 'e' and result['rating'] == 's' or 'q':
-            #    continue
-            #elif args.rating == 'q' and result['rating'] == 'e':
-            #    continue
-            #elif args.rating == 's' and result['rating'] == 'e' or 'q':
-            #    continue
+            if args.rating == 'e' and result['rating'] in ['s', 'q']
+                continue
+            elif args.rating == 'q' and result['rating'] == 'e':
+                continue
+            elif args.rating == 's' and result['rating'] in ['e', 'q']
+                continue
             md5 = result['md5']
             if md5 in md5_dict:
                 continue
@@ -113,7 +113,7 @@ def main():
     if os.path.exists(folder_path) == False:
         os.makedirs(folder_path)
                     
-    num_conn = int(max_threads)
+    num_conn = iont(max_threads)
     threads = []
     for download in range(num_conn):
         t = Url_Download(queue)
