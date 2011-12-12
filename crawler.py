@@ -33,11 +33,11 @@ def main():
                         help='maximum number of images per page')
     parser.add_argument('-b', '--booru', type=str, default='danbooru', 
                         help='Choose your booru. Choices are konachan, oreno,danbooru, sankaku')
-    parser.add_argument('-p', '--pages', type=int, default=1
+    parser.add_argument('-p', '--pages', type=int, default=1,
                       help='maximum number of pages to download')
     parser.add_argument('-c', '--conn', type=int, default=4,
                       help='max number of threads to use, maximum of 8')
-    parser.add_argument('-r', '--rating', typ=int, choices=[1,2,3],
+    parser.add_argument('-r', '--rating', type=int, choices=[1,2,3], default=3,
                       help='desired rating for images. optional.')
     
     boorus = {
@@ -91,7 +91,7 @@ def main():
         folder_path = os.path.normpath(folder_path)
         folder_path = os.path.abspath(folder_path)
         for result in query_results:
-            ratings = = {'s':1, 'q':2, 'e':3}
+            ratings = {'s':1, 'q':2, 'e':3}
             rating = ratings[result['rating']]
             if rating > args.rating:
                 continue
@@ -111,7 +111,7 @@ def main():
     if os.path.exists(folder_path) == False:
         os.makedirs(folder_path)
                     
-    num_conn = iont(max_threads)
+    num_conn = int(max_threads)
     threads = []
     for download in range(num_conn):
         t = Url_Download(queue)
