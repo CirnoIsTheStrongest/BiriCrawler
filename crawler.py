@@ -2,6 +2,8 @@
 
 ## 1. gelbooru API support
 ## 2. Custom Filename Nomenclature
+## 3. add check for save images
+## 4. add load queue state from image_counter.py
 import shutil
 import traceback
 import urllib
@@ -32,6 +34,8 @@ parser.add_argument('-p', '--pages', type=int,
                   help='maximum number of pages to download', default=1)
 parser.add_argument('-c', '--conn', type=int, default=4,
                   help='max number of threads to use, maximum of 8')
+parser.add_argument('-r', '--rating', type=str,
+                  help='desired rating for images. optional.')
 
 boorus = {
           'konachan':'http://konachan.com/post/index.json', 
@@ -121,6 +125,12 @@ for current_page in range(1, args.pages + 1):
     folder_path = os.path.normpath(folder_path)
     folder_path = os.path.abspath(folder_path)
     for result in query_results:
+        if arg.rating == 'e' and result['rating'] == 's' or 'q':
+            continue
+        if arg.rating == 'q' and result['rating'] == 'e':
+            continue
+        if arg.rating == 's' and result['rating' == 'e' or 'q':
+            continue
         md5 = result['md5']
         if md5 in md5_dict:
             continue
