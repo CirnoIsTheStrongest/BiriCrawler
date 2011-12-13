@@ -110,7 +110,9 @@ def main():
     print 'Total images for queue: ', queue.qsize()
     if os.path.exists(folder_path) == False:
         os.makedirs(folder_path)
-                    
+    
+    md5_dict = {}
+    
     num_conn = int(max_threads)
     threads = []
     for download in range(num_conn):
@@ -120,7 +122,7 @@ def main():
         
     for thread in threads:
         thread.join()
-        
+    md5_pickler(md5_dict)
     time_elapsed = time.time() - start_time
     print 'All files downloaded! Total time elapsed: {0} {1}.'.format(round(time_elapsed, 3), 'seconds')
     print 'Total data downloaded: {}'.format(convert_bytes(total_download))
