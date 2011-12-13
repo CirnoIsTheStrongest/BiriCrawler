@@ -2,7 +2,9 @@
 
 ## 1. gelbooru API support
 ## 2. Custom Filename Nomenclature
-## 3. add load queue state from image_counter.py
+## 3. remove image_counter, add counting to crawler.py
+## 4. add jpeg_file_size/jpg_url downloads only, show differences
+## 5. merge changes from testing~
 import shutil
 import traceback
 import urllib
@@ -25,7 +27,7 @@ parser = argparse.ArgumentParser(description='*Booru image crawler!')
 
 parser.add_argument('tags', type=str,
                     help='tags to download (required)')
-parser.add_argument('-l', '--limit', type=int,
+parser.add_argument('-l', '--limit', type=int, default=20,
                     help='maximum number of images per page')
 parser.add_argument('-b', '--booru', type=str, default='danbooru', 
                     help='Choose your booru. Choices are konachan, oreno,danbooru, sankaku')
@@ -33,7 +35,7 @@ parser.add_argument('-p', '--pages', type=int,
                   help='maximum number of pages to download', default=1)
 parser.add_argument('-c', '--conn', type=int, default=4,
                   help='max number of threads to use, maximum of 8')
-parser.add_argument('-r', '--rating', type=str,
+parser.add_argument('-r', '--rating', type=int, choices=[1,2,3], default=3,
                   help='desired rating for images. optional.')
 
 boorus = {
@@ -100,7 +102,7 @@ except IOError:
     md5_dict = {}
     
 data_downloaded = 0   
-folder_path = raw_input('Save File To:')
+folder_path = raw_input(' Save File To: ')
 
 if len(folder_path) == 0:
     if sys.platform.startswith("linux"):
@@ -110,7 +112,7 @@ if len(folder_path) == 0:
 try:
     url = boorus[args.booru.lower()]
 except KeyError:
-    print 'No Such Booru!'
+    print ' No Such Booru!'
     raise SystemExit
     
 ## encodes data in url readable format, builds manual request
@@ -118,7 +120,7 @@ except KeyError:
 total_download = 0
 for current_page in range(1, args.pages + 1):
     request_data = urllib.urlencode({'tags':args.tags, 'limit':args.limit, 'page':current_page})
-    print 'Currently parsing page: {}'.format(current_page)
+    print ' Currently parsing page: {}'.format(current_page)
     if args.booru == 'konachan':
         time.sleep(2)
     req = urllib2.Request(url, request_data)
@@ -128,12 +130,10 @@ for current_page in range(1, args.pages + 1):
     folder_path = os.path.normpath(folder_path)
     folder_path = os.path.abspath(folder_path)
     for result in query_results:
-        #if args.rating == 'e' and result['rating'] == 's' or 'q':
-        #    continue
-        #elif args.rating == 'q' and result['rating'] == 'e':
-        #    continue
-        #elif args.rating == 's' and result['rating'] == 'e' or 'q':
-        #    continue
+        ratings = {'s':1, 'q':2, 'e':3}
+        rating = ratings[result['rating']]
+        if rating > args.rating:
+            continue
         md5 = result['md5']
         if md5 in md5_dict:
             continue
@@ -146,10 +146,17 @@ for current_page in range(1, args.pages + 1):
         file_size = result['file_size']
         queue.put((file_url, file_path, md5, file_size))
         total_download = total_download + file_size
-print 'Total images for queue: ', queue.qsize()
+print ' Total images for queue: {0}. Total queue filesize: {1}.'.format(queue.qsize(), convert_bytes(total_download))
 if os.path.exists(folder_path) == False:
     os.makedirs(folder_path)
 
+queue_proceed = raw_input(' Would you like proceed? Yes/No: ')
+if queue_proceed == 'no':
+    print 'Exiting Crawler...'
+    raise SystemExit
+if queue_proceed == 'yes':
+    print 'Proceeding to download...'
+    
 class url_download(threading.Thread):
     def __init__(self, queue):
         self.queue = queue
@@ -167,11 +174,11 @@ class url_download(threading.Thread):
                 else:
                     count +=1
                 if count > 3:
-                    print 'File failed to download, might be corrupt.'
+                    print ' File failed to download, might be corrupt.'
                     continue           
                 qsize = self.queue.qsize()
                 if qsize > 0:
-                    print 'Count Remaining: ', qsize
+                    print ' Count Remaining: ', qsize
             except Queue.Empty:
                 raise SystemExit 
             except:
@@ -187,7 +194,8 @@ for download in range(num_conn):
     
 for thread in threads:
     thread.join()
-    
+
+md5_pickler(md5_dict)
 time_elapsed = time.time() - start_time
-print 'All files downloaded! Total time elapsed: {0} {1}.'.format(round(time_elapsed, 3), 'seconds')
-print 'Total data downloaded: {}'.format(convert_bytes(total_download))
+print ' All files downloaded! Total time elapsed: {0} {1}.'.format(round(time_elapsed, 3), 'seconds')
+print ' Total data downloaded: {}'.format(convert_bytes(total_download))
