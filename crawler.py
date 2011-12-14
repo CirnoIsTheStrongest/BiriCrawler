@@ -23,8 +23,8 @@ from functions import *
 def main():
     
     start_time = time.time()
-
     queue = Queue.Queue()
+    
     parser = argparse.ArgumentParser(description='*Booru image crawler!')
     
     parser.add_argument('tags', type=str,
@@ -76,8 +76,6 @@ def main():
         print 'No Such Booru!'
         raise SystemExit
         
-    ## encodes data in url readable format, builds manual request
-    ## opens page, reads response and decodes JSON
     total_download = 0
     for current_page in range(1, args.pages + 1):
         request_data = urllib.urlencode({'tags':args.tags, 'limit':args.limit, 'page':current_page})
@@ -107,21 +105,35 @@ def main():
             file_size = result['file_size']
             queue.put((file_url, file_path, md5, file_size))
             total_download = total_download + file_size
-    print 'Total images for queue: ', queue.qsize()
+    print ' Total images for queue: {0}. Total queue filesize: {1}.'.format(queue.qsize(), convert_bytes(total_download))
     if os.path.exists(folder_path) == False:
         os.makedirs(folder_path)
-    
+
+    queue_proceed = raw_input(' Would you like proceed? Yes/No: ')
+    if queue_proceed == 'no':
+        print 'Exiting Crawler...'
+        raise SystemExit
+    if queue_proceed == 'yes':
+         print 'Proceeding to download...'
+
     md5_dict = {}
-    
+    md5_queue = Queue.Queue()
+        
     num_conn = int(max_threads)
     threads = []
     for download in range(num_conn):
-        t = Url_Download(queue)
+        t = Url_Download(queue, md5_queue)
         t.start()
         threads.append(t)
-        
     for thread in threads:
         thread.join()
+    
+    while True:
+        try:
+            md5, file_name = md5_queue.get_nowait()
+            md5_dict[md5] = file_name
+        execept Queue.Empty:
+            break
     md5_pickler(md5_dict)
     time_elapsed = time.time() - start_time
     print 'All files downloaded! Total time elapsed: {0} {1}.'.format(round(time_elapsed, 3), 'seconds')

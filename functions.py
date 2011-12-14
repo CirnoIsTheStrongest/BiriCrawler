@@ -56,24 +56,27 @@ def md5_unpickler(md5sum_file):
        return pickle.load(f)
 
 class Url_Download(threading.Thread):
-    def __init__(self, queue):
-        self.queue = queue
+    def __init__(self, dl_queue, md5_queue):
+        self.dl_queue = dl_queue
+        self.md5_queue = md5_queue
         Thread.__init__(self)
     def run(self):
         while 1:
             try:
                 count = 0
                 file_url, file_path, md5, file_size = self.queue.get_nowait()
-                fetch_url(file_url, file_path, md5)
                 file_extension = str(file_url)[-4:]
                 file_name = md5 + file_extension
-                if md5 == hash_sum(file_path):
-                   md5_dict[md5] = file_name
-                else:
+                while count < 3:
                     count +=1
+                    fetch_url(file_url, file_path, md5)
+                    if md5 == hash_sum(file_path):
+                       #md5_dict[md5] = file_name
+                       self.md5_queue.put_nowait((md5, file_name))
+                       break
+                       
                 if count > 3:
-                    print 'File failed to download, might be corrupt.'
-                    continue           
+                    print 'File failed to download, {} might be corrupt.'.format(file_name)       
                 qsize = self.queue.qsize()
                 if qsize > 0:
                     print 'Count Remaining: ', qsize
