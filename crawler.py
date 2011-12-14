@@ -79,7 +79,7 @@ def main():
     total_download = 0
     for current_page in range(1, args.pages + 1):
         request_data = urllib.urlencode({'tags':args.tags, 'limit':args.limit, 'page':current_page})
-        print 'Currently parsing        page: {}'.format(current_page)
+        print 'Currently parsing page: {}'.format(current_page)
         if args.booru == 'konachan':
             time.sleep(2)
         req = urllib2.Request(url, request_data)
@@ -132,7 +132,7 @@ def main():
         try:
             md5, file_name = md5_queue.get_nowait()
             md5_dict[md5] = file_name
-        execept Queue.Empty:
+        except Queue.Empty:
             break
     md5_pickler(md5_dict)
     time_elapsed = time.time() - start_time
