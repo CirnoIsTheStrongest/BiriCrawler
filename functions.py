@@ -61,7 +61,7 @@ def md5_unpickler(md5sum_file):
 def json_parser(url,(args_booru, args_pages, args_limit, args_tags, args_rating, md5_dict, folder_path)):
     json_queue = Queue.Queue()
     for current_page in range(1, args_pages + 1):   
-        request_data = urllib.urlencode({'tags':args_tags, 'limit':args_limit, 'page':current_page})
+        request_data = urllib.urlencode({'tags': args_tags, 'limit': args_limit, 'page': current_page})
         print 'Currently parsing page: {}'.format(current_page)
         if args_booru == 'konachan':
             time.sleep(2)
@@ -70,7 +70,7 @@ def json_parser(url,(args_booru, args_pages, args_limit, args_tags, args_rating,
         response_data = response.read()
         query_results = Decoder().decode(response_data)
         for result in query_results:
-            ratings = {'s':1, 'q':2, 'e':3}
+            ratings = {'s': 1, 'q': 2, 'e': 3}
             rating = ratings[result['rating']]
             if rating > args_rating:
                 continue
@@ -91,10 +91,23 @@ def xml_parser(url, (args_booru, args_pages, args_limit, args_tags, args_rating,
     xml_queue = Queue.Queue()
     if args_booru == 'gelbooru':
         page = 'pid'
+        data = {
+            'page': 'dapi',
+            's': 'post',
+            'q': 'index',
+            'tags': args_tags,
+            'limit': args_limit,
+            'pid': 1,
+            }
     else:
         page = 'page'
+        data = {
+            'tags': args_tags,
+            'limit': args_limit,
+            'page': 1,        }
     for current_page in range(1, args_pages + 1):   
-        request_data = urllib.urlencode({'tags':args_tags, 'limit':args_limit, page:current_page})
+        data[page] = current_page
+        request_data = urllib.urlencode(data)
         print 'Currently parsing page: {}'.format(current_page)
         if args_booru == 'konachan':
             time.sleep(2)
@@ -103,8 +116,9 @@ def xml_parser(url, (args_booru, args_pages, args_limit, args_tags, args_rating,
         #response = urllib2.urlopen('http://gelbooru.com/index.php?page=dapi&s=post&q=index&tags={0}&limit={1}&pid={2}'.format(args_tags, args_limit, current_page))
         response = urllib2.urlopen(req)
         query_results = ElementTree.parse(response).findall('post')
+        
         for post in query_results:
-            ratings = {'s':1, 'q':2, 'e':3}
+            ratings = {'s': 1, 'q': 2, 'e': 3}
             rating = ratings[post.attrib['rating']]
             if rating > args_rating:
                 continue

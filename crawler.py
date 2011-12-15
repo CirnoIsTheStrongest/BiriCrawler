@@ -44,19 +44,19 @@ def main():
                       help='desired parsing type, xml or json.')
         
     boorus_json = {
-             'konachan':'http://konachan.com/post/index.json', 
-             'oreno':'http://oreno.imouto.org/post/index.json', 
-             'danbooru':'http://danbooru.donmai.us/post/index.json',
-             'sankaku':'http://chan.sankakucomplex.com/post/index.json',
-             'neko':'http://nekobooru.net/post/index.json'
+             'konachan': 'http://konachan.com/post/index.json', 
+             'oreno': 'http://oreno.imouto.org/post/index.json', 
+             'danbooru': 'http://danbooru.donmai.us/post/index.json',
+             'sankaku': 'http://chan.sankakucomplex.com/post/index.json',
+             'neko': 'http://nekobooru.net/post/index.json'
               }
          
     boorus_xml = {
-             'konachan':'http://konachan.com/post/index.xml', 
-             'oreno':'http://oreno.imouto.org/post/index.xml', 
-             'danbooru':'http://danbooru.donmai.us/post/index.xml',
-             'neko':'http://nekobooru.net/post/index.xml',
-             'gelbooru':'http://gelbooru.com/index.php?page=dapi&s=post&q=index',
+             'konachan': 'http://konachan.com/post/index.xml', 
+             'oreno': 'http://oreno.imouto.org/post/index.xml', 
+             'danbooru': 'http://danbooru.donmai.us/post/index.xml',
+             'neko': 'http://nekobooru.net/post/index.xml',
+             'gelbooru': 'http://gelbooru.com/index.php',
               }
     args = parser.parse_args()
     if args.conn < 8:
