@@ -1,5 +1,10 @@
 #!/usr/bin/python -tt
 
+## 1. gelbooru API support
+## 2. Custom Filename Nomenclature
+## 3. cache images from directory
+
+
 from xml.etree import ElementTree
 import shutil
 import traceback
@@ -50,7 +55,8 @@ def main():
              'konachan':'http://konachan.com/post/index.xml', 
              'oreno':'http://oreno.imouto.org/post/index.xml', 
              'danbooru':'http://danbooru.donmai.us/post/index.xml',
-             'neko':'http://nekobooru.net/post/index.xml'
+             'neko':'http://nekobooru.net/post/index.xml',
+             'gelbooru':'http://gelbooru.com/index.php?page=dapi&s=post&q=index&',
               }
     args = parser.parse_args()
     if args.conn < 8:
@@ -85,7 +91,6 @@ def main():
         raise SystemExit
     
     def json_parser(url):
-        total_download = 0
         json_queue = Queue.Queue()
         for current_page in range(1, args.pages + 1):   
             request_data = urllib.urlencode({'tags':args.tags, 'limit':args.limit, 'page':current_page})
@@ -109,18 +114,19 @@ def main():
                 file_name = md5 + file_extension
                 file_tags = result['tags']
                 file_path = os.path.join(folder_path, file_name)
-                file_size = result['file_size']
-                json_queue.put((file_url, file_path, md5, file_size))
-                total_download = total_download + file_size
-        print ' Total images for queue: {0}. Total queue filesize: {1}.'.format(json_queue.qsize(), convert_bytes(total_download))
+                json_queue.put((file_url, file_path, md5))
+        print ' Total images for queue: {}.'.format(json_queue.qsize())
         return json_queue
             
      
     def xml_parser(url):
-        total_download = 0
         xml_queue = Queue.Queue()
+        if args.booru == 'gelbooru':
+            page = 'pid'
+        else:
+            page = 'page'
         for current_page in range(1, args.pages + 1):   
-            request_data = urllib.urlencode({'tags':args.tags, 'limit':args.limit, 'page':current_page})
+            request_data = urllib.urlencode({'tags':args.tags, 'limit':args.limit, page:current_page})
             print 'Currently parsing page: {}'.format(current_page)
             if args.booru == 'konachan':
                 time.sleep(2)
@@ -128,6 +134,10 @@ def main():
             response = urllib2.urlopen(request)
             query_results = ElementTree.parse(response).findall('post')
             for post in query_results:
+                ratings = {'s':1, 'q':2, 'e':3}
+                rating = ratings[post.attrib['rating']]
+                if rating > args.rating:
+                    continue
                 md5 = post.attrib['md5']
                 if md5 in md5_dict:
                     continue
@@ -136,11 +146,8 @@ def main():
                 file_name = md5 + file_extension
                 file_path = os.path.join(folder_path, file_name)
                 tags = post.attrib['tags'].split()
-                rating = post.attrib['rating']
-                file_size = post.attrib['file_size']
-                xml_queue.put((file_url, file_path, md5, file_size))
-                total_download = total_download + int(file_size)
-        print ' Total images for queue: {0}. Total queue filesize: {1}.'.format(xml_queue.qsize(), convert_bytes(total_download))
+                xml_queue.put((file_url, file_path, md5))
+        print 'Total images for queue: {}.'.format(xml_queue.qsize())
         return xml_queue
     
     if args.partype == 'j':
@@ -155,8 +162,7 @@ def main():
         print 'Exiting Crawler...'
         raise SystemExit
     elif queue_proceed == 'yes':
-         print 'Proceeding to download...'
-
+        print 'Proceeding to download...'
     md5_dict = {}
     md5_queue = Queue.Queue()
         
@@ -178,7 +184,7 @@ def main():
     md5_pickler(md5_dict)
     time_elapsed = time.time() - start_time
     print 'All files downloaded! Total time elapsed: {0} {1}.'.format(round(time_elapsed, 3), 'seconds')
-    print 'Total data downloaded: {}'.format(convert_bytes(total_download))
+  #  print 'Total data downloaded: {}'.format(convert_bytes(total_download))
 
 if __name__ == "__main__":
     main()

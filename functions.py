@@ -64,7 +64,7 @@ class Url_Download(threading.Thread):
         while 1:
             try:
                 count = 0
-                file_url, file_path, md5, file_size = self.dl_queue.get_nowait()
+                file_url, file_path, md5 = self.dl_queue.get_nowait()
                 file_extension = str(file_url)[-4:]
                 file_name = md5 + file_extension
                 while count < 3:
