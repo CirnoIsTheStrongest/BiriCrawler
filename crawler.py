@@ -139,17 +139,22 @@ def main():
                 rating = post.attrib['rating']
                 file_size = post.attrib['file_size']
                 xml_queue.put((file_url, file_path, md5, file_size))
-                print total_download
                 total_download = total_download + int(file_size)
         print ' Total images for queue: {0}. Total queue filesize: {1}.'.format(xml_queue.qsize(), convert_bytes(total_download))
         return xml_queue
-    queue_proceed = raw_input('Would you like proceed? Yes/No: ')    
+    
+    if args.partype == 'j':
+        queue = json_parser(url)
+    elif args.partype == 'x':
+        queue = xml_parser(url)
+    
     if os.path.exists(folder_path) == False:
-            os.makedirs(folder_path
+        os.makedirs(folder_path)
+    queue_proceed = raw_input('Would you like proceed? Yes/No: ')  
     if queue_proceed == 'no':
         print 'Exiting Crawler...'
         raise SystemExit
-    if queue_proceed == 'yes':
+    elif queue_proceed == 'yes':
          print 'Proceeding to download...'
 
     md5_dict = {}
@@ -158,10 +163,7 @@ def main():
     num_conn = int(max_threads)
     threads = []
     for download in range(num_conn):
-        if args.partype == 'j':
-            t = Url_Download(json_queue, md5_queue)
-        elif args.parype == 'x':
-            t = Url_Download(xml_queue, md5_queue)
+        t = Url_Download(queue, md5_queue)
         t.start()
         threads.append(t)
     for thread in threads:
