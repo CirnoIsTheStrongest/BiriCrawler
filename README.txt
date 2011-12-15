@@ -12,11 +12,8 @@ Feature highlight:
 2. Multi-threading, downloads multiple files at a time
 3. Caches file hashes so you never download the same file twice
 4. Verifies files after downloading to make sure there were no errors
-<<<<<<< .merge_file_a06068
-=======
 5. Use image_counter.py to count images before queuing them
 6. image_counter.py can also be used to see the filesize of all the images in the batch
->>>>>>> .merge_file_a03292
 
 Basic usage:
 
