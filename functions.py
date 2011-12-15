@@ -1,15 +1,18 @@
+from xml.etree import ElementTree
+import shutil
+import traceback
+import urllib
+import urllib2
+from json import JSONDecoder as Decoder
 import os
 import threading
 from threading import Thread
 import Queue
 import sys
 import hashlib
-import shutil
-import traceback
-import urllib2
+import argparse
 import time
 import cPickle as pickle
-import urllib
 
 
 
@@ -54,6 +57,66 @@ def md5_pickler(md5_info):
 def md5_unpickler(md5sum_file):
     with open(md5sum_file, 'rb') as f:
        return pickle.load(f)
+
+def json_parser(url,(args_booru, args_pages, args_limit, args_tags, args_rating, md5_dict, folder_path)):
+    json_queue = Queue.Queue()
+    for current_page in range(1, args_pages + 1):   
+        request_data = urllib.urlencode({'tags':args_tags, 'limit':args_limit, 'page':current_page})
+        print 'Currently parsing page: {}'.format(current_page)
+        if args_booru == 'konachan':
+            time.sleep(2)
+        req = urllib2.Request(url, request_data)
+        response = urllib2.urlopen(req)
+        response_data = response.read()
+        query_results = Decoder().decode(response_data)
+        for result in query_results:
+            ratings = {'s':1, 'q':2, 'e':3}
+            rating = ratings[result['rating']]
+            if rating > args_rating:
+                continue
+            md5 = result['md5']
+            if md5 in md5_dict:
+                continue
+            file_url = result['file_url']
+            file_extension = str(file_url)[-4:]
+            file_name = md5 + file_extension
+            file_tags = result['tags']
+            file_path = os.path.join(folder_path, file_name)
+            json_queue.put((file_url, file_path, md5))
+    print ' Total images for queue: {}.'.format(json_queue.qsize())
+    return json_queue
+        
+ 
+def xml_parser(url, (args_booru, args_pages, args_limit, args_tags, args_rating, md5_dict, folder_path)):
+    xml_queue = Queue.Queue()
+    if args_booru == 'gelbooru':
+        page = 'pid'
+    else:
+        page = 'page'
+    for current_page in range(1, args_pages + 1):   
+        request_data = urllib.urlencode({'tags':args_tags, 'limit':args_limit, page:current_page})
+        print 'Currently parsing page: {}'.format(current_page)
+        if args_booru == 'konachan':
+            time.sleep(2)
+        request = urllib2.Request(url, request_data)
+        response = urllib2.urlopen(request)
+        query_results = ElementTree.parse(response).findall('post')
+        for post in query_results:
+            ratings = {'s':1, 'q':2, 'e':3}
+            rating = ratings[post.attrib['rating']]
+            if rating > args_rating:
+                continue
+            md5 = post.attrib['md5']
+            if md5 in md5_dict:
+                continue
+            file_url = post.attrib['file_url']
+            file_extension = str(file_url)[-4:]
+            file_name = md5 + file_extension
+            file_path = os.path.join(folder_path, file_name)
+            tags = post.attrib['tags'].split()
+            xml_queue.put((file_url, file_path, md5))
+    print 'Total images for queue: {}.'.format(xml_queue.qsize())
+    return xml_queue
 
 class Url_Download(threading.Thread):
     def __init__(self, dl_queue, md5_queue):

@@ -89,71 +89,13 @@ def main():
     except KeyError:
         print 'No Such Booru!'
         raise SystemExit
-    
-    def json_parser(url):
-        json_queue = Queue.Queue()
-        for current_page in range(1, args.pages + 1):   
-            request_data = urllib.urlencode({'tags':args.tags, 'limit':args.limit, 'page':current_page})
-            print 'Currently parsing page: {}'.format(current_page)
-            if args.booru == 'konachan':
-                time.sleep(2)
-            req = urllib2.Request(url, request_data)
-            response = urllib2.urlopen(req)
-            response_data = response.read()
-            query_results = Decoder().decode(response_data)
-            for result in query_results:
-                ratings = {'s':1, 'q':2, 'e':3}
-                rating = ratings[result['rating']]
-                if rating > args.rating:
-                    continue
-                md5 = result['md5']
-                if md5 in md5_dict:
-                    continue
-                file_url = result['file_url']
-                file_extension = str(file_url)[-4:]
-                file_name = md5 + file_extension
-                file_tags = result['tags']
-                file_path = os.path.join(folder_path, file_name)
-                json_queue.put((file_url, file_path, md5))
-        print ' Total images for queue: {}.'.format(json_queue.qsize())
-        return json_queue
-            
-     
-    def xml_parser(url):
-        xml_queue = Queue.Queue()
-        if args.booru == 'gelbooru':
-            page = 'pid'
-        else:
-            page = 'page'
-        for current_page in range(1, args.pages + 1):   
-            request_data = urllib.urlencode({'tags':args.tags, 'limit':args.limit, page:current_page})
-            print 'Currently parsing page: {}'.format(current_page)
-            if args.booru == 'konachan':
-                time.sleep(2)
-            request = urllib2.Request(url, request_data)
-            response = urllib2.urlopen(request)
-            query_results = ElementTree.parse(response).findall('post')
-            for post in query_results:
-                ratings = {'s':1, 'q':2, 'e':3}
-                rating = ratings[post.attrib['rating']]
-                if rating > args.rating:
-                    continue
-                md5 = post.attrib['md5']
-                if md5 in md5_dict:
-                    continue
-                file_url = post.attrib['file_url']
-                file_extension = str(file_url)[-4:]
-                file_name = md5 + file_extension
-                file_path = os.path.join(folder_path, file_name)
-                tags = post.attrib['tags'].split()
-                xml_queue.put((file_url, file_path, md5))
-        print 'Total images for queue: {}.'.format(xml_queue.qsize())
-        return xml_queue
-    
+
+    n_args = (args.booru, args.pages, args.limit, args.tags, args.rating, md5_dict, folder_path)
+
     if args.partype == 'j':
-        queue = json_parser(url)
+        queue = json_parser(url, n_args)
     elif args.partype == 'x':
-        queue = xml_parser(url)
+        queue = xml_parser(url, n_args)
     
     if os.path.exists(folder_path) == False:
         os.makedirs(folder_path)
