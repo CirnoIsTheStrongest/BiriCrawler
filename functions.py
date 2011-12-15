@@ -64,7 +64,7 @@ class Url_Download(threading.Thread):
         while 1:
             try:
                 count = 0
-                file_url, file_path, md5, file_size = self.queue.get_nowait()
+                file_url, file_path, md5, file_size = self.dl_queue.get_nowait()
                 file_extension = str(file_url)[-4:]
                 file_name = md5 + file_extension
                 while count < 3:
@@ -77,7 +77,7 @@ class Url_Download(threading.Thread):
                        
                 if count > 3:
                     print 'File failed to download, {} might be corrupt.'.format(file_name)       
-                qsize = self.queue.qsize()
+                qsize = self.dl_queue.qsize()
                 if qsize > 0:
                     print 'Count Remaining: ', qsize
             except Queue.Empty:
