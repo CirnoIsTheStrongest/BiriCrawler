@@ -56,7 +56,7 @@ def main():
              'oreno':'http://oreno.imouto.org/post/index.xml', 
              'danbooru':'http://danbooru.donmai.us/post/index.xml',
              'neko':'http://nekobooru.net/post/index.xml',
-             'gelbooru':'http://gelbooru.com/index.php?page=dapi&s=post&q=index&',
+             'gelbooru':'http://gelbooru.com/index.php?page=dapi&s=post&q=index',
               }
     args = parser.parse_args()
     if args.conn < 8:
