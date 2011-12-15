@@ -111,14 +111,12 @@ def xml_parser(url, (args_booru, args_pages, args_limit, args_tags, args_rating,
         print 'Currently parsing page: {}'.format(current_page)
         if args_booru == 'konachan':
             time.sleep(2)
-        req = urllib2.Request(url, request_data)
-        ## make case to build url from scratch if it is gelbooru
-        #response = urllib2.urlopen('http://gelbooru.com/index.php?page=dapi&s=post&q=index&tags={0}&limit={1}&pid={2}'.format(args_tags, args_limit, current_page))
+        req = urllib2.Request('?'.join([url, request_data]))
         response = urllib2.urlopen(req)
         query_results = ElementTree.parse(response).findall('post')
         
+        ratings = {'s': 1, 'q': 2, 'e': 3}
         for post in query_results:
-            ratings = {'s': 1, 'q': 2, 'e': 3}
             rating = ratings[post.attrib['rating']]
             if rating > args_rating:
                 continue

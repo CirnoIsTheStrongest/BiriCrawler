@@ -99,12 +99,17 @@ def main():
     
     if os.path.exists(folder_path) == False:
         os.makedirs(folder_path)
-    queue_proceed = raw_input('Would you like proceed? Yes/No: ')  
-    if queue_proceed == 'no':
-        print 'Exiting Crawler...'
-        raise SystemExit
-    elif queue_proceed == 'yes':
-        print 'Proceeding to download...'
+    while True:
+        queue_proceed = raw_input('Would you like to proceed? Yes/No\n>> ').lower()
+
+        if queue_proceed in ['yes', 'y']:
+            print 'Proceeding to download...'
+            break
+        elif queue_proceed in ['no', 'n']:
+            print 'Exiting script...'
+            raise SystemExit
+        else:
+            print("Please input either 'Yes' or 'No'")
     md5_dict = {}
     md5_queue = Queue.Queue()
         
@@ -126,7 +131,5 @@ def main():
     md5_pickler(md5_dict)
     time_elapsed = time.time() - start_time
     print 'All files downloaded! Total time elapsed: {0} {1}.'.format(round(time_elapsed, 3), 'seconds')
-  #  print 'Total data downloaded: {}'.format(convert_bytes(total_download))
-
 if __name__ == "__main__":
     main()
