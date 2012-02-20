@@ -1,2 +1,11 @@
 *.pyc
 *.pickle
+*.qrc
+*.CirnoDB
+dist
+build
+*.png
+*.dropbox
+*.xml
+*.json
+destktop.ini
