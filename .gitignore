@@ -8,4 +8,4 @@ build
 *.dropbox
 *.xml
 *.json
-destktop.ini
+*.ini
