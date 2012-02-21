@@ -63,7 +63,7 @@
     <enum>QTabWidget::Rounded</enum>
    </property>
    <property name="currentIndex">
-    <number>0</number>
+    <number>1</number>
    </property>
    <property name="elideMode">
     <enum>Qt::ElideLeft</enum>
@@ -405,7 +405,6 @@ p, li { white-space: pre-wrap; }
      <property name="styleSheet">
       <string notr="true">image: url(:/cirno/cirno3.png);</string>
      </property>
-     <zorder>gridLayoutWidget</zorder>
     </widget>
    </widget>
    <widget class="QWidget" name="tab_2">
@@ -522,6 +521,12 @@ p, li { white-space: pre-wrap; }
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
+        </property>
+        <property name="inputMask">
+         <string/>
+        </property>
+        <property name="echoMode">
+         <enum>QLineEdit::Password</enum>
         </property>
        </widget>
       </item>

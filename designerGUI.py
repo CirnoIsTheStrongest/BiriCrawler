@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'designerGUI.ui'
 #
-# Created: Sun Jan 22 22:26:45 2012
-#      by: PyQt4 UI code generator 4.9
+# Created: Mon Feb 20 09:18:40 2012
+#      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -234,6 +234,8 @@ class Ui_crawler(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.booruPassword.sizePolicy().hasHeightForWidth())
         self.booruPassword.setSizePolicy(sizePolicy)
+        self.booruPassword.setInputMask(_fromUtf8(""))
+        self.booruPassword.setEchoMode(QtGui.QLineEdit.Password)
         self.booruPassword.setObjectName(_fromUtf8("booruPassword"))
         self.gridLayout.addWidget(self.booruPassword, 2, 1, 1, 1)
         self.booruLoginLabel = QtGui.QLabel(self.gridLayoutWidget_3)
@@ -270,7 +272,7 @@ class Ui_crawler(object):
         self.tabWidget.addTab(self.tab_2, _fromUtf8(""))
 
         self.retranslateUi(crawler)
-        self.tabWidget.setCurrentIndex(0)
+        self.tabWidget.setCurrentIndex(1)
         self.booruComboBox.setCurrentIndex(-1)
         QtCore.QMetaObject.connectSlotsByName(crawler)
 
